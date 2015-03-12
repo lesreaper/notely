@@ -6,7 +6,7 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>My AngularJS App</title>
+  <title>Notely</title>
   <meta name="description" content="">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="bower_components/html5-boilerplate/css/normalize.css">
@@ -17,7 +17,7 @@
   <link rel="stylesheet" href="app.css">
   <script src="bower_components/html5-boilerplate/js/vendor/modernizr-2.6.2.min.js"></script>
 </head>
-<body>
+<body ng-controller="NotesController">
 
   <div class="container wrap">
     <div class="row">
@@ -33,6 +33,11 @@
           <nav id="sidebar">
             <div class="well">
               SIDEBAR
+              <ul>
+                <li ng-repeat="note in notes">
+                  {{ note.title }}
+                </li>
+              </ul>
             </div>
           </nav>
         </div>
