@@ -16,8 +16,6 @@ angular.module('myApp.notes', ['ngRoute'])
 
   NotesBackend.fetchNotes();
 
-  // $scope.note = {};
-
   $scope.notes = function() {
     return NotesBackend.getNotes();
   };
@@ -26,13 +24,22 @@ angular.module('myApp.notes', ['ngRoute'])
     return $scope.notes().length > 0;
   };
 
+  $scope.buttonText = function(note) {
+    return (note && note.id) ? 'Update Note' : 'Create Note';
+  };
+
   $scope.commit = function() {
-    NotesBackend.postNote($scope.note);
+    if ($scope.note.id) {
+      NotesBackend.updateNote($scope.note);
+    }
+    else {
+      NotesBackend.postNote($scope.note);
+    }
   };
 
   $scope.loadNote = function(note) {
-    $scope.note = note;
-  }
+    $scope.note = JSON.parse(JSON.stringify(note));
+  };
 
   $scope.findNoteById = function(noteId) {
     var notes = $scope.notes();
@@ -42,11 +49,13 @@ angular.module('myApp.notes', ['ngRoute'])
       }
     }
   };
+
 }])
 
 .service('NotesBackend', ['$http', function($http){
 
   var notes = [];
+  var self = this;
 
   this.getNotes = function() {
     return notes;
@@ -66,6 +75,16 @@ angular.module('myApp.notes', ['ngRoute'])
     }).success(function(newNoteData) {
       notes.push(newNoteData);
     });
-  }
+  };
+
+  this.updateNote = function(note) {
+    $http.put(notelyBasePath + 'notes/' + note.id, {
+      api_key: apiKey,
+      note: note
+    }).success(function(response){
+      // TODO: replace note in notes variable instead of full refresh
+      self.fetchNotes();
+    });
+  };
 
 }]);
