@@ -8,6 +8,15 @@ angular.module('myApp', [
   'myApp.version',
   'myApp.notes'
 ]).
+
 config(['$routeProvider', function($routeProvider) {
   $routeProvider.otherwise({redirectTo: '/notes'});
-}]);
+}]).
+
+directive('focusOn', function(){
+  return function(scope, elem, attr) {
+    scope.$on(attr.focusOn, function(){
+      elem[0].focus();
+    });
+  };
+});

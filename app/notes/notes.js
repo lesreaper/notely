@@ -3,7 +3,7 @@
 var notelyBasePath = 'https://elevennote-nov-2014.herokuapp.com/api/v1/';
 var apiKey = '$2a$10$XBGDMf7E9czj7TLKA1Ewie4C7pt413Vpg8ARHoicS4EedouucNDLK';
 
-angular.module('myApp.notes', ['ngRoute'])
+angular.module('myApp.notes', ['ngRoute', 'textAngular'])
 
 .config(['$routeProvider', function($routeProvider) {
   $routeProvider.when('/notes', {
@@ -28,12 +28,14 @@ angular.module('myApp.notes', ['ngRoute'])
     return (note && note.id) ? 'Update Note' : 'Create Note';
   };
 
-  $scope.commit = function() {
+  $scope.saveNote = function() {
     if ($scope.note.id) {
       NotesBackend.updateNote($scope.note);
     }
     else {
-      NotesBackend.postNote($scope.note);
+      NotesBackend.postNote($scope.note, function(newNote) {
+        $scope.note = JSON.parse(JSON.stringify(newNote));
+      });
     }
   };
 
@@ -48,6 +50,20 @@ angular.module('myApp.notes', ['ngRoute'])
         return notes[i];
       }
     }
+  };
+
+  $scope.clearNote = function() {
+    $scope.note = {};
+    // These do the same thing, but the broadcast listener in the
+    // focusOn directive provides a cleaner separation of code from HTML
+    // document.getElementById('note_title').focus();
+    $scope.$broadcast('noteCleared');
+  };
+
+  $scope.deleteNote = function(note) {
+    NotesBackend.deleteNote(note, function() {
+      $scope.clearNote();
+    });
   };
 
 }])
@@ -68,12 +84,13 @@ angular.module('myApp.notes', ['ngRoute'])
     });
   };
 
-  this.postNote = function(noteData) {
+  this.postNote = function(noteData, callback) {
     $http.post(notelyBasePath + 'notes', {
       api_key: apiKey,
       note: noteData
     }).success(function(newNoteData) {
       notes.push(newNoteData);
+      callback(newNoteData);
     });
   };
 
@@ -84,6 +101,13 @@ angular.module('myApp.notes', ['ngRoute'])
     }).success(function(response){
       // TODO: replace note in notes variable instead of full refresh
       self.fetchNotes();
+    });
+  };
+
+  this.deleteNote = function(note, callback) {
+    $http.delete(notelyBasePath + 'notes/' + note.id + '?api_key=' + apiKey).success(function(response) {
+      self.fetchNotes();
+      callback();
     });
   };
 
